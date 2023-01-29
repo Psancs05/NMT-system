@@ -1,2 +1,2 @@
-*.tar
-*.txt
+raw-data/
+split-data/

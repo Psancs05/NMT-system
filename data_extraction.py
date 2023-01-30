@@ -1,31 +1,39 @@
 import tarfile
 import gzip
 import glob
+import os
+import sys
+from tqdm import tqdm
 
-BYTES_TO_READ = 1024 * 1024 * 50 # (*1024 -> 1 GB)
 RAW_DATA_PATH = 'raw-data/'
 SPLIT_DATA_PATH = 'split-data/'
+SENTENCES_TO_READ = 1000000
 
-def read_file_by_chuncks(gz_file):
-    print('Reading file...')
-    bytes_read = 0
-    sentences = []
+
+def read_file_by_chuncks(gz_src_file, gz_trg_file, language_pair):
+    src_sentences = []
+    trg_sentences = []
+
+    print('Reading ' + language_pair + ' source file')
+    with gzip.open(gz_src_file, 'rt', encoding='utf-8') as gz1:
+        for _ in tqdm(range(SENTENCES_TO_READ)):
+            src_chunck = gz1.readline().strip()
+            src_sentences.append(src_chunck)
     
-    with gzip.open(gz_file, 'rb') as gz:
-        while True:
-            chunk = gz.read(1024*1024).decode('utf-8', errors='ignore')
-            bytes_read += len(chunk)
-            if bytes_read >= BYTES_TO_READ or len(chunk) == 0: # len(chunk) == 0 is for the case when the file is smaller than BYTES_TO_READ
-                break
-            # Add all the lines to lines
-            sentences.extend(chunk.split('\n'))
-    return sentences   
+    print('Reading ' + language_pair + ' target file')
+    with gzip.open(gz_trg_file, 'rt', encoding='utf-8') as gz2:
+        for i in tqdm(range(SENTENCES_TO_READ)):
+            trg_chunck = gz2.readline().strip()
+            trg_sentences.append(trg_chunck)
+    
+    return src_sentences, trg_sentences
+  
 
 def write_file(sentences, file_name):
-    print('Writing to file...')
+    print('Writing ' + file_name)
     with open(file_name, 'w', encoding='utf-8') as f:
         # Write each sentence in the list to the file, followed by a newline character
-        for sentence in sentences:
+        for sentence in tqdm(sentences):
             f.write(sentence + '\n')
 
 def read_file():
@@ -37,11 +45,8 @@ def read_file():
             
             gz_src_file = [file for file in files if file.endswith('train.src.gz')]
             gz_trg_file = [file for file in files if file.endswith('train.trg.gz')]
-            # print(gz_src_file)
-            # print(gz_trg_file)
-            
-            src_sentences = read_file_by_chuncks(tar.extractfile(gz_src_file[0]))
-            trg_sentences = read_file_by_chuncks(tar.extractfile(gz_trg_file[0]))
+            # print(gz_src_file[0])
+            # print(gz_trg_file[0])
             
             # Create a name for the file
             language_pair = gz_src_file[0].split('/')[-2].split('.')[0]
@@ -50,11 +55,22 @@ def read_file():
             # print(src_file_name)
             # print(trg_file_name)
             
+            src_sentences, trg_sentences = read_file_by_chuncks(tar.extractfile(gz_src_file[0]), tar.extractfile(gz_trg_file[0]), language_pair)
+            print()
+            
             write_file(src_sentences, SPLIT_DATA_PATH + src_file_name)
-            write_file(trg_sentences, SPLIT_DATA_PATH + trg_file_name)                    
+            write_file(trg_sentences, SPLIT_DATA_PATH + trg_file_name)
+            print()    
             
+            # TODO: If the tar has not 1000000 sentences, clean the emtpy lines generated in the txt file
+          
             
-    
-            
+
 if __name__ == '__main__':
+    if not os.path.exists(RAW_DATA_PATH) or len(os.listdir(RAW_DATA_PATH)) == 0:
+        sys.exit('ERROR! Please download the raw data from https://github.com/Helsinki-NLP/Tatoeba-Challenge and place it in the raw-data folder')
+    
+    if not os.path.exists(SPLIT_DATA_PATH):
+        os.makedirs(SPLIT_DATA_PATH)
+    
     read_file()

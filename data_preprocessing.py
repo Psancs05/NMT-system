@@ -1,9 +1,11 @@
 import tensorflow as tf
 import tensorflow_text as tf_text
+import os
 
 SPLIT_DATA_PATH = 'split-data/'
+VOCAB_PATH = 'vocab/'
 MAX_VOCAB_SIZE = 5000
-BUFFER_SIZE = 500000
+BUFFER_SIZE = 100000
 BATCH_SIZE = 64
 
 
@@ -81,7 +83,26 @@ def text_vectorization(dataset):
 
     return context_text_processor, target_text_processor
 
+def process_text(context, target):
 
+    context = context_text_processor(context).to_tensor()
+    target = target_text_processor(target)
+
+    trg_in = target[:,:-1].to_tensor()
+    trg_out = target[:,1:].to_tensor()
+  
+    return (context, trg_in), trg_out
+
+def save_processor(processor, file_name):
+    # Create the folder if it doesn't exist
+    if not os.path.exists(VOCAB_PATH):
+        os.makedirs(VOCAB_PATH)
+
+    # TODO: Checkear si esta bien guardado asi 
+    # Save the vocabulary
+    with open(file_name, 'w') as f:
+        f.write('\n'.join(processor.get_vocabulary()))
+    
 
 if __name__ == '__main__':
     train, val, test = create_datasets()
@@ -89,3 +110,20 @@ if __name__ == '__main__':
 
     print(context_text_processor.get_vocabulary()[:10])
     print(target_text_processor.get_vocabulary()[:10])
+
+    train_ds = train.map(process_text, tf.data.AUTOTUNE)
+    val_ds = val.map(process_text, tf.data.AUTOTUNE)
+
+    # Save train and validation datasets
+    tf.data.experimental.save(train_ds, 'train_ds')
+    tf.data.experimental.save(val_ds, 'val_ds')
+
+    print('------------------')
+
+    sentence = 'This is a sample sentence.'
+    vectorized_sentence = context_text_processor([sentence])
+    print(vectorized_sentence)
+
+    print('------------------')
+    save_processor(context_text_processor, VOCAB_PATH + 'context_vocab.txt')
+    save_processor(target_text_processor, VOCAB_PATH + 'target_vocab.txt')   

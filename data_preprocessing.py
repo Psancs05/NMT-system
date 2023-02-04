@@ -4,7 +4,7 @@ import os
 
 SPLIT_DATA_PATH = 'split-data/'
 VOCAB_PATH = 'vocab/'
-MAX_VOCAB_SIZE = 5000
+MAX_VOCAB_SIZE = 5000 #TODO: Numeros cercanos a potencias de 2 mejoran el rendimiento (menos tiempo de entrenamiento)
 BUFFER_SIZE = 100000
 BATCH_SIZE = 64
 
@@ -45,7 +45,7 @@ def create_datasets():
     return train_raw, val_raw, test_raw
 
 
-def preproces_text(sentence):
+def standardize_text(sentence):
     # Split accented characters
     sentence = tf_text.normalize_utf8(sentence, 'NFKD')
 
@@ -68,14 +68,14 @@ def preproces_text(sentence):
 
 def text_vectorization(dataset):
     context_text_processor = tf.keras.layers.TextVectorization(
-        standardize = preproces_text,
+        standardize = standardize_text,
         max_tokens = MAX_VOCAB_SIZE,
         ragged = True,
     )
     context_text_processor.adapt(dataset.map(lambda context, target: context))
 
     target_text_processor = tf.keras.layers.TextVectorization(
-        standardize = preproces_text,
+        standardize = standardize_text,
         max_tokens = MAX_VOCAB_SIZE,
         ragged = True,
     )
@@ -83,7 +83,7 @@ def text_vectorization(dataset):
 
     return context_text_processor, target_text_processor
 
-def process_text(context, target):
+def process_text(context, target, context_text_processor, target_text_processor):
 
     context = context_text_processor(context).to_tensor()
     target = target_text_processor(target)
@@ -92,38 +92,3 @@ def process_text(context, target):
     trg_out = target[:,1:].to_tensor()
   
     return (context, trg_in), trg_out
-
-def save_processor(processor, file_name):
-    # Create the folder if it doesn't exist
-    if not os.path.exists(VOCAB_PATH):
-        os.makedirs(VOCAB_PATH)
-
-    # TODO: Checkear si esta bien guardado asi 
-    # Save the vocabulary
-    with open(file_name, 'w') as f:
-        f.write('\n'.join(processor.get_vocabulary()))
-    
-
-if __name__ == '__main__':
-    train, val, test = create_datasets()
-    context_text_processor, target_text_processor = text_vectorization(train)
-
-    print(context_text_processor.get_vocabulary()[:10])
-    print(target_text_processor.get_vocabulary()[:10])
-
-    train_ds = train.map(process_text, tf.data.AUTOTUNE)
-    val_ds = val.map(process_text, tf.data.AUTOTUNE)
-
-    # Save train and validation datasets
-    tf.data.experimental.save(train_ds, 'train_ds')
-    tf.data.experimental.save(val_ds, 'val_ds')
-
-    print('------------------')
-
-    sentence = 'This is a sample sentence.'
-    vectorized_sentence = context_text_processor([sentence])
-    print(vectorized_sentence)
-
-    print('------------------')
-    save_processor(context_text_processor, VOCAB_PATH + 'context_vocab.txt')
-    save_processor(target_text_processor, VOCAB_PATH + 'target_vocab.txt')   

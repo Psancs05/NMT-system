@@ -1,2 +1,5 @@
 raw-data/
 split-data/
+
+*.zip
+*.pyc

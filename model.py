@@ -293,12 +293,11 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
         super().__init__()
 
         self.d_model = d_model
-        self.d_model = tf.cast(self.d_model, tf.float32)
         self.warmup_steps = warmup_steps
 
     def get_config(self):
         config = {
-            'd_model': self.d_model, #check this, with self.d_model raises an error
+            'd_model': self.d_model,
             'warmup_steps': self.warmup_steps,
         }
         return config
@@ -307,8 +306,8 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
         step = tf.cast(step, dtype=tf.float32)
         arg1 = tf.math.rsqrt(step)
         arg2 = step * (self.warmup_steps ** -1.5)
-
-        return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
+        op = tf.cast(self.d_model, tf.float32) # Convertimos aqui a tensor para que no de error de serializacion al guardar la clase
+        return tf.math.rsqrt(op) * tf.math.minimum(arg1, arg2)
     
 def masked_loss(label, pred):
     mask = label != 0

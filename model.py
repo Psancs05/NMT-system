@@ -68,18 +68,43 @@ class AddNorm(tf.keras.layers.Layer):
         return x
 
     
-#! Base attention layer
-class BaseAttention(tf.keras.layers.Layer):
-  def __init__(self, **kwargs) -> None:
-      super().__init__()
+#! Global self attention layer
+class GlobalSelfAttention(tf.keras.layers.Layer):
+    def __init__(self, num_heads, key_dim, dropout_rate=0.1, **kwargs) -> None:
+        super().__init__()
 
-      self.mha = tf.keras.layers.MultiHeadAttention(**kwargs)
-      self.addnorm = AddNorm()
+        self.mha = tf.keras.layers.MultiHeadAttention(
+            num_heads = num_heads,
+            key_dim = key_dim,
+            dropout = dropout_rate,
+        )
+        self.addnorm = AddNorm()
+
+    def call(self, x):
+        attn_output = self.mha(
+            query = x,
+            value = x,
+            key = x,
+        )
+
+        x = self.addnorm(x, attn_output)
+        return x
+  
 
 
 
 #! Cross attention layer
-class CrossAttention(BaseAttention):
+class CrossAttention(tf.keras.layers.Layer):
+    def __init__(self, num_heads, key_dim, dropout_rate=0.1, **kwargs) -> None:
+        super().__init__()
+
+        self.mha = tf.keras.layers.MultiHeadAttention(
+            num_heads = num_heads,
+            key_dim = key_dim,
+            dropout = dropout_rate,
+        )
+        self.addnorm = AddNorm()
+
     def call(self, x, context):
         attn_output, attn_scores = self.mha(
             query = x,
@@ -93,23 +118,21 @@ class CrossAttention(BaseAttention):
 
         x = self.addnorm(x, attn_output)
         return x
-
-
-#! Global self attention layer
-class GlobalSelfAttention(BaseAttention):
-    def call(self, x):
-        attn_output = self.mha(
-            query = x,
-            value = x,
-            key = x,
-        )
-
-        x = self.addnorm(x, attn_output)
-        return x
      
 
 #! Causal self attention layer
-class CausalSelfAttention(BaseAttention):
+class CausalSelfAttention(tf.keras.layers.Layer):
+    def __init__(self, num_heads, key_dim, dropout_rate=0.1, **kwargs) -> None:
+        super().__init__()
+
+        self.mha = tf.keras.layers.MultiHeadAttention(
+            num_heads = num_heads,
+            key_dim = key_dim,
+            dropout = dropout_rate,
+        )
+        self.addnorm = AddNorm()
+
+
     def call(self, x):
         attn_output = self.mha(
             query = x,

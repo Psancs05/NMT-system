@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 RAW_DATA_PATH = 'raw-data/'
 SPLIT_DATA_PATH = 'split-data/'
-SENTENCES_TO_READ = 65536
+SENTENCES_TO_READ = 125000
 
 
 def read_file_by_chuncks(gz_src_file, gz_trg_file, language_pair):

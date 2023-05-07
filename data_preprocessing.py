@@ -4,8 +4,8 @@ import os
 
 SPLIT_DATA_PATH = 'split-data/'
 VOCAB_PATH = 'vocab/'
-MAX_VOCAB_SIZE = 4096 #TODO: Numeros cercanos a potencias de 2 mejoran el rendimiento (menos tiempo de entrenamiento)
-BUFFER_SIZE = 65536
+MAX_VOCAB_SIZE = 32768 #TODO: Numeros cercanos a potencias de 2 mejoran el rendimiento (menos tiempo de entrenamiento)
+BUFFER_SIZE = 32768
 BATCH_SIZE = 64
 
 

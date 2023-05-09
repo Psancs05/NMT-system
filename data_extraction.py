@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 RAW_DATA_PATH = 'raw-data/'
 SPLIT_DATA_PATH = 'split-data/'
-SENTENCES_TO_READ = 125000
+SENTENCES_TO_READ = 65536
 
 
 def read_file_by_chuncks(gz_src_file, gz_trg_file, language_pair):
@@ -50,8 +50,8 @@ def read_file():
             
             # Create a name for the file
             language_pair = gz_src_file[0].split('/')[-2].split('.')[0]
-            src_file_name = 'source_' + language_pair + '.txt'
-            trg_file_name = 'target_' + language_pair + '.txt'
+            src_file_name = language_pair + '.txt'
+            trg_file_name = language_pair.split('-')[1] + '-' + language_pair.split('-')[0] + '.txt'
             # print(src_file_name)
             # print(trg_file_name)
             

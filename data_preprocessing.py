@@ -6,7 +6,7 @@ SPLIT_DATA_PATH = 'split-data/'
 VOCAB_PATH = 'vocab/'
 MAX_VOCAB_SIZE = 32768 #TODO: Numeros cercanos a potencias de 2 mejoran el rendimiento (menos tiempo de entrenamiento)
 BUFFER_SIZE = 32768
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 
 
 def open_file(file_name):
@@ -15,8 +15,8 @@ def open_file(file_name):
 
 
 def create_datasets():
-    src_raw = open_file(SPLIT_DATA_PATH + 'source_eng-spa.txt')
-    trg_raw = open_file(SPLIT_DATA_PATH + 'target_eng-spa.txt')
+    src_raw = open_file(SPLIT_DATA_PATH + 'eng-spa.txt')
+    trg_raw = open_file(SPLIT_DATA_PATH + 'spa-eng.txt')
 
     # Create a train dataset with 80% of the data
     train_raw = (

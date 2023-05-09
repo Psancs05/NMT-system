@@ -1,5 +1,9 @@
 raw-data/
 split-data/
+models/
+weights/
+eval/
+metrics/
 
 *.zip
 *.pyc

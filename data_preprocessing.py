@@ -3,10 +3,9 @@ import tensorflow_text as tf_text
 import os
 
 SPLIT_DATA_PATH = 'split-data/'
-VOCAB_PATH = 'vocab/'
 MAX_VOCAB_SIZE = 32768 #TODO: Numeros cercanos a potencias de 2 mejoran el rendimiento (menos tiempo de entrenamiento)
 BUFFER_SIZE = 32768
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 
 
 def open_file(file_name):
@@ -15,8 +14,8 @@ def open_file(file_name):
 
 
 def create_datasets():
-    src_raw = open_file(SPLIT_DATA_PATH + 'eng-spa.txt')
-    trg_raw = open_file(SPLIT_DATA_PATH + 'spa-eng.txt')
+    src_raw = open_file(SPLIT_DATA_PATH + 'ita-eng.txt')
+    trg_raw = open_file(SPLIT_DATA_PATH + 'eng-ita.txt')
 
     # Create a train dataset with 80% of the data
     train_raw = (
@@ -26,23 +25,15 @@ def create_datasets():
         .batch(BATCH_SIZE)
     )
 
-    # Create a validation dataset with 10% of the data
+    # Create a test dataset with 10% of the data
     val_raw = (
         tf.data.Dataset
-        .from_tensor_slices((src_raw[int(len(src_raw) * 0.8):int(len(src_raw) * 0.9)], trg_raw[int(len(trg_raw) * 0.8):int(len(trg_raw) * 0.9)]))
+        .from_tensor_slices((src_raw[int(len(src_raw) * 0.8):], trg_raw[int(len(trg_raw) * 0.8):]))
         .shuffle(BUFFER_SIZE)
         .batch(BATCH_SIZE)
     )
 
-    # Create a test dataset with 10% of the data
-    test_raw = (
-        tf.data.Dataset
-        .from_tensor_slices((src_raw[int(len(src_raw) * 0.9):], trg_raw[int(len(trg_raw) * 0.9):]))
-        .shuffle(BUFFER_SIZE)
-        .batch(BATCH_SIZE)
-    )
-
-    return train_raw, val_raw, test_raw
+    return train_raw, val_raw
 
 
 def standardize_text(sentence):

@@ -4,6 +4,7 @@ models/
 weights/
 eval/
 metrics/
+vocab/
 
 *.zip
 *.pyc

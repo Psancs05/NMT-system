@@ -9,7 +9,7 @@ def plot_single_loss(metrics, model_name):
     plt.plot(metrics["loss"], label="train")
     plt.plot(metrics["val_loss"], label="validation")
     plt.xticks(range(1, len(metrics["loss"]) + 1, 1))
-    plt.title("Loss")
+    plt.title("Loss" + " - " + model_name)
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend()
@@ -23,7 +23,7 @@ def plot_single_accuracy(metrics, model_name):
     plt.plot(metrics["masked_acc"], label="train")
     plt.plot(metrics["val_masked_acc"], label="validation")
     plt.xticks(range(1, len(metrics["masked_acc"]) + 1, 1))
-    plt.title("Accuracy")
+    plt.title("Accuracy" + " - " + model_name)
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend()
@@ -37,7 +37,7 @@ def plot_single_training_time(metrics, model_name):
     # Plot the training time per epoch 
     plt.plot(metrics["training_time"], label="train")
     plt.xticks(range(1, len(metrics["training_time"]) + 1, 1))
-    plt.title("Training time per epoch")
+    plt.title("Training time per epoch" + " - " + model_name)
     plt.xlabel("Epoch")
     plt.ylabel("Training time (s)")
     plt.legend()
@@ -93,23 +93,6 @@ def plot_multiple_training_time(metrics, models):
 
 def main():
 
-    # #! This is for plotting a single model
-    # # Load the metrics
-    # MODEL_NAME = "en_es_20_6_256_512_8_0-3"
-    # metrics = pd.read_csv("metrics/" + MODEL_NAME + ".csv")
-    # metrics.index.name = "epoch"
-    # metrics.index += 1
-    # # print(metrics.head())
-
-    # # Plot the loss
-    # plot_single_loss(metrics, MODEL_NAME)
-    # # Plot the accuracy
-    # plot_single_accuracy(metrics, MODEL_NAME)
-    # # Plot the training time
-    # plot_single_training_time(metrics, MODEL_NAME)
-
-
-    #! This is for plotting multiple models
     # Load all the models from the metrics/ folder
     files = glob.glob("metrics/*.csv")
     # Remove the .csv extension
@@ -128,6 +111,19 @@ def main():
     # print(files)
     # print(models)
 
+    #! This is for plotting a single model
+    for i in range(len(files)):
+        single_model_metrics = pd.read_csv(files[i])
+        model_name = models[i]
+        # Plot the loss
+        plot_single_loss(single_model_metrics, model_name)
+        # Plot the accuracy
+        plot_single_accuracy(single_model_metrics, model_name)
+        # Plot the training time
+        plot_single_training_time(single_model_metrics, model_name)
+
+
+    #! This is for plotting multiple models
     # plot the loss for all the models
     plot_multiple_loss(metrics, models)
     # plot the accuracy for all the models
